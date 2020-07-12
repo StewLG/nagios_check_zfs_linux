@@ -67,12 +67,15 @@ fragCritThreshold=80
 logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.WARN);
 
 def pythonVersionCheck():
+    MinimumPython_MajorVersionNumber = 3
+    MinimumPython_MinorVersion = 9
+
     majorMinor = sys.version_info[:2]
     major = majorMinor[0]
     minor = majorMinor[1]
-    if ((major < 3) or (major == 3 and minor < 8)):
+    if ((major < MinimumPython_MajorVersionNumber) or (major == MinimumPython_MajorVersionNumber and minor < MinimumPython_MinorVersion)):
         # Note -- We WANT This string syntax, as callers may not have newer ones if running older versions of Python!
-        exit("Error, script needs needs Python 3.8 or later. Detected Python version %s.%s" % (major, minor))
+        exit("Error, script needs needs Python %s.%s or later. Detected Python version %s.%s" % (MinimumPython_MajorVersionNumber, MinimumPython_MinorVersion, major, minor))
 
 def CheckArgBounds( valueArr, minVal, maxVal ):
     for value in valueArr:
