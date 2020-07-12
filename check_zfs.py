@@ -41,7 +41,7 @@ import os
 # Commands to run
 # CHANGE THESE IF YOU NEED TO
 ##
-sudoCommand='/usr/bin/sudo_xxx'
+sudoCommand='/usr/bin/sudo'
 zpoolCommand='/sbin/zpool'
 zfsCommand='/sbin/zfs'
 
@@ -97,9 +97,9 @@ def RaiseStateNum( stateNumIn, stateNum ):
 def CheckForExistenceOfCommand(parser, commandToCheck):
     commandExists = os.path.isfile(commandToCheck)
     if (not commandExists):
+        global stateNum
         stateNum = RaiseStateNum(3, stateNum)
         logging.warn("%s : can't find command %s.", nagiosStatus[stateNum], commandToCheck)
-        parser.print_help()
         exit(stateNum)
 
 def CheckForExistenceOfCommands(parser):
