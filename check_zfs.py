@@ -35,12 +35,13 @@ import sys
 from array import *
 from types import *
 from os import geteuid
+import os
 
 ##
 # Commands to run
 # CHANGE THESE IF YOU NEED TO
 ##
-sudoCommand='/usr/bin/sudo'
+sudoCommand='/usr/bin/sudo_xxx'
 zpoolCommand='/sbin/zpool'
 zfsCommand='/sbin/zfs'
 
