@@ -108,9 +108,9 @@ def CheckForExistenceOfCommands(parser):
     CheckForExistenceOfCommand(parser, zfsCommand)
 
 def LogWarningRootProcessWarningAndExit(contextString, stateNum, optionalException=None):
-    warningString = f"{contextString} -- {nagiosStatus[stateNum]} : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: {zfsCommand}"
+    warningString = f'{contextString} -- {nagiosStatus[stateNum]} : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: {zfsCommand}';
     if optionalException is not None:
-        warningString = warningString + f"Exception: {optionalException}"
+        warningString = warningString + f'Exception: {optionalException}'
     logging.warning(warningString)
     exit(stateNum)
 
