@@ -63,6 +63,7 @@ capCritThreshold=80
 checkFragmentation=False
 fragWarnThreshold=50
 fragCritThreshold=80
+useSudoToRunZfsCommands=True
 
 logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.WARN);
 
@@ -125,6 +126,14 @@ def LogWarningRootProcessWarningAndExit(contextString, stateNum, optionalExcepti
     logging.warning(warningString)
     exit(stateNum)
 
+def GetArgsForZfsCommand(zfsCommandAndArgs):
+    if (useSudoToRunZfsCommands):
+        # Prepend command with "sudo -n" for noninteractive (will not ask for password, will just error if there's a problem)
+        return [sudoCommand, '-n'] + zfsCommandAndArgs;
+    else:
+        # Will just attempt to run the command without sudo
+        return zfsCommandAndArgs;
+
 ## Check for reasonably modern version of Python
 pythonVersionCheck();
 
@@ -138,6 +147,7 @@ parser = argparse.ArgumentParser(
     epilog='Note that monitor flags (e.g. capacity) require 2 arguments: warning threshold, and critical threshold')
 parser.add_argument('--capacity', help="monitor utilization of zpool (%%, int [0-100])", type=int, nargs=2)
 parser.add_argument('--fragmentation', help="monitor fragmentation of zpool (%%, int [0-100])", type=int, nargs=2)
+parser.add_argument('--nosudo', required=False, action='store_true', help="do not attempt to sudo first when running zfs commands, instead just run them. The nagios user will need permissions to run these commands if used, so edit the sudoers file - see visudo to do this.")
 parser.add_argument('pool', help="name of the zpool to check", type=str)
 
 args = parser.parse_args()
@@ -166,6 +176,7 @@ if args.fragmentation is not None:
         logging.warning("%s  : Fragmentation thresholds must be between 0 and 100 (as a percent).", nagiosStatus[stateNum])
         parser.print_help()
         exit(stateNum)
+useSudoToRunZfsCommands = not args.nosudo
 
 ## Make sure the commands we need are available to be later run
 CheckForExistenceOfCommands(parser);
@@ -184,7 +195,8 @@ CheckForExistenceOfCommands(parser);
 ##
 # Get generic info about the ZFS environment
 zfsEntries = []
-fullCommand=[sudoCommand, '-n', zfsCommand, 'list']
+#fullCommand=[sudoCommand, '-n', zfsCommand, 'list']
+fullCommand = GetArgsForZfsCommand([zfsCommand, 'list'])
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 except OSError as osException:
@@ -218,7 +230,8 @@ if not validPool:
 ##
 # Get info on zpool
 
-fullCommand=[sudoCommand, '-n', zpoolCommand, 'list', args.pool]
+#fullCommand=[sudoCommand, '-n', zpoolCommand, 'list', args.pool]
+fullCommand = GetArgsForZfsCommand([zpoolCommand, 'list'], args.pool)
 
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE,
@@ -293,7 +306,8 @@ if checkFragmentation and frag=='':
 
 # Get compressratio on zpool
 
-checkForCompression=[sudoCommand, '-n', zfsCommand, 'get', 'compression', args.pool]
+#checkForCompression=[sudoCommand, '-n', zfsCommand, 'get', 'compression', args.pool]
+checkForCompression = GetArgsForZfsCommand([zfsCommand, 'get', 'compression', args.pool])
 
 try:
     childProcess = subprocess.Popen(checkForCompression, stdin=subprocess.PIPE,
@@ -331,7 +345,8 @@ if compressName=='':
     logging.warning("%s: Missing required field in zpool output: NAME", nagiosStatus[stateNum])
     exit(stateNum)
 if compressValue=='on':
-    getCompressRatioCommand=[sudoCommand, '-n', zfsCommand, 'get', 'compressratio', args.pool]
+    #getCompressRatioCommand=[sudoCommand, '-n', zfsCommand, 'get', 'compressratio', args.pool]
+    getCompressRatioCommand = GetArgsForZfsCommand([zfsCommand, 'get', 'compressratio', args.pool])
 
     try:
         childProcess = subprocess.Popen(getCompressRatioCommand, stdin=subprocess.PIPE,
