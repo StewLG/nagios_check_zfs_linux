@@ -28,6 +28,7 @@
 ########################################################################
 
 from sys import exit
+from sys import version
 import subprocess
 import argparse
 import logging
@@ -65,6 +66,13 @@ fragCritThreshold=80
 
 logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.WARN);
 
+def pythonVersionCheck():
+    majorMinor = sys.version_info[:2]
+    major = majorMinor[0]
+    minor = majorMinor[1]
+    if ((major < 3) or (major == 3 and minor < 8)):
+        # Note -- We WANT This string syntax, as callers may not have newer ones if running older versions of Python!
+        exit("Error, script needs needs Python 3.8 or later. Detected Python version %s.%s" % (major, minor))
 
 def CheckArgBounds( valueArr, minVal, maxVal ):
     for value in valueArr:
@@ -114,6 +122,8 @@ def LogWarningRootProcessWarningAndExit(contextString, stateNum, optionalExcepti
     logging.warning(warningString)
     exit(stateNum)
 
+## Check for reasonably modern version of Python
+pythonVersionCheck();
 
 ###################################################################################
 ##
