@@ -40,6 +40,7 @@ from os import geteuid
 # Commands to run
 # CHANGE THESE IF YOU NEED TO
 ##
+sudoCommand='/usr/bin/sudo'
 zpoolCommand='/sbin/zpool'
 zfsCommand='/sbin/zfs'
 
@@ -92,6 +93,19 @@ def RaiseStateNum( stateNumIn, stateNum ):
         return stateNumIn
     return stateNum
 
+def CheckForExistenceOfCommand(parser, commandToCheck):
+    commandExists = os.path.isfile(commandToCheck)
+    if (not commandExists):
+        stateNum = RaiseStateNum(3, stateNum)
+        logging.warn("%s : can't find command %s.", nagiosStatus[stateNum], commandToCheck)
+        parser.print_help()
+        exit(stateNum)
+
+def CheckForExistenceOfCommands(parser):
+    CheckForExistenceOfCommand(parser, sudoCommand)
+    CheckForExistenceOfCommand(parser, zpoolCommand)
+    CheckForExistenceOfCommand(parser, zfsCommand)
+
 ###################################################################################
 ##
 # Parse command line args
@@ -130,6 +144,10 @@ if args.fragmentation is not None:
         logging.warn("%s  : Fragmentation thresholds must be between 0 and 100 (as a percent).", nagiosStatus[stateNum])
         parser.print_help()
         exit(stateNum)
+
+## Make sure the commands we need are available to be later run
+CheckForExistenceOfCommands(parser);
+
 ###################################################################################
 ###################################################################################
 ##
@@ -144,7 +162,7 @@ if args.fragmentation is not None:
 ##
 # Get generic info about the ZFS environment
 zfsEntries = []
-fullCommand=['/usr/bin/sudo', '-n', zfsCommand, 'list']
+fullCommand=[sudoCommand, '-n', zfsCommand, 'list']
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 except OSError:
