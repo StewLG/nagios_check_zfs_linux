@@ -107,6 +107,14 @@ def CheckForExistenceOfCommands(parser):
     CheckForExistenceOfCommand(parser, zpoolCommand)
     CheckForExistenceOfCommand(parser, zfsCommand)
 
+def LogWarningRootProcessWarningAndExit(stateNum, optionalException):
+    warningString = f"{nagiosStatus[stateNum]} : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: {zfsCommand}"
+    if optionalException is not none:
+        warningString = warningString + $"Exception: {optionalException}"
+    logging.warn(warningString)
+    exit(stateNum)
+
+
 ###################################################################################
 ##
 # Parse command line args
@@ -166,18 +174,20 @@ zfsEntries = []
 fullCommand=[sudoCommand, '-n', zfsCommand, 'list']
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-except OSError:
+except OSError as osException:
     stateNum = RaiseStateNum(3, stateNum)
-    logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zfs",  nagiosStatus[stateNum])
-    exit(stateNum)
+    #logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zfs",  nagiosStatus[stateNum])
+    LogWarningRootProcessWarningAndExit(stateNum, osException);
+    #exit(stateNum)
 
 zfsString = childProcess.communicate()[0]
 zfsRetval = childProcess.returncode
 
 if zfsRetval is 1:
     stateNum = RaiseStateNum(3, stateNum)
-    logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zfs",  nagiosStatus[stateNum])
-    exit(stateNum)
+    #logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zfs",  nagiosStatus[stateNum])
+    LogWarningRootProcessWarningAndExit(stateNum);
+    #exit(stateNum)
 
 zfsLines = zfsString.splitlines()
 for idx, line in enumerate(zfsLines):
@@ -204,17 +214,19 @@ fullCommand=['/usr/bin/sudo', '-n', zpoolCommand, 'list', args.pool]
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-except OSError:
+except OSError as osException:
     stateNum = RaiseStateNum(3, stateNum)
-    logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
-    exit(stateNum)
+    #logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
+     LogWarningRootProcessWarningAndExit(stateNum, osException);
+    #exit(stateNum)
 zpoolString = childProcess.communicate()[0]
 zpoolRetval = childProcess.returncode
 
 if zpoolRetval is 1:
     stateNum = RaiseStateNum(3, stateNum)
-    logging.warn( "%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
-    exit(stateNum)
+    #logging.warn( "%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
+    LogWarningRootProcessWarningAndExit(stateNum);
+    #exit(stateNum)
 
 zpoolLines=zpoolString.splitlines()
 zpoolMeta=zpoolLines[0].decode().split()
@@ -280,17 +292,19 @@ checkForCompression=['/usr/bin/sudo', '-n', zfsCommand, 'get', 'compression', ar
 try:
     childProcess = subprocess.Popen(checkForCompression, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-except OSError:
+except OSError as osException:
     stateNum = RaiseStateNum(3, stateNum)
-    logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
-    exit(stateNum)
+    #logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
+    LogWarningRootProcessWarningAndExit(stateNum, osException); 
+    #exit(stateNum)
 zpoolString = childProcess.communicate()[0]
 zpoolRetval = childProcess.returncode
 
 if zpoolRetval is 1:
     stateNum = RaiseStateNum(3, stateNum)
-    logging.warn( "%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
-    exit(stateNum)
+    #logging.warn( "%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
+    LogWarningRootProcessWarningAndExit(stateNum);
+    #exit(stateNum)
 
 zpoolLines=zpoolString.splitlines()
 zpoolMeta=zpoolLines[0].decode().split()
@@ -320,17 +334,20 @@ if compressValue=='on':
     try:
         childProcess = subprocess.Popen(getCompressRatioCommand, stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except OSError:
+    except OSError as osException:
         stateNum = RaiseStateNum(3, stateNum)
-        logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
-        exit(stateNum)
+        #logging.warn("%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
+        #exit(stateNum)
+        LogWarningRootProcessWarningAndExit(stateNum, osException);
+
     zpoolString = childProcess.communicate()[0]
     zpoolRetval = childProcess.returncode
 
     if zpoolRetval is 1:
         stateNum = RaiseStateNum(3, stateNum)
-        logging.warn( "%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
-        exit(stateNum)
+        #logging.warn( "%s : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: /sbin/zpool", nagiosStatus[stateNum])
+        #exit(stateNum)
+        LogWarningRootProcessWarningAndExit(stateNum);
 
     zpoolLines=zpoolString.splitlines()
     zpoolMeta=zpoolLines[0].decode().split()
