@@ -231,7 +231,7 @@ if not validPool:
 # Get info on zpool
 
 #fullCommand=[sudoCommand, '-n', zpoolCommand, 'list', args.pool]
-fullCommand = GetArgsForZfsCommand([zpoolCommand, 'list'], args.pool)
+fullCommand = GetArgsForZfsCommand([zpoolCommand, 'list', args.pool])
 
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE,
