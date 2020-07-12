@@ -246,7 +246,8 @@ zpoolRetval = childProcess.returncode
 
 if zpoolRetval is 1:
     stateNum = RaiseStateNum(3, stateNum)
-    LogWarningRootProcessWarningAndExit(f"Zpool command - retval. Original command: \"{fullCommand}\" ", stateNum);
+    commandDebugString = "Zpool command - retval. Original command: \"" + fullCommand + "\"";
+    LogWarningRootProcessWarningAndExit(commandDebugString, stateNum);
 
 zpoolLines=zpoolString.splitlines()
 zpoolMeta=zpoolLines[0].decode().split()
