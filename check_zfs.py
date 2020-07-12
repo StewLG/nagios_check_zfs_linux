@@ -124,21 +124,22 @@ def CheckForExistenceOfCommands(parser):
     CheckForExistenceOfCommand(parser, zfsCommand)
 
 def LogWarningRootProcessWarningAndExit(contextString, stateNum, optionalException=None):
+    # If the script is failing to run because of this line, you are likely running too old a version of Python. I wish it were possible to make the script just print this
+    # clearly rather than crash, but it's not possible: https://stackoverflow.com/questions/446052/how-can-i-check-for-python-version-in-a-program-that-uses-new-language-features
+    # The version check done above helps in some cases, but won't fix this problem.
     warningString = f'{nagiosStatus[stateNum]} : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: Context: {contextString}, then run check script with --nosudo option.'
     if optionalException is not None:
         warningString = f'{warningString} Exception: {optionalException}';
     logging.warning(warningString)
     exit(stateNum)
 
-def GetArgsForZfsCommand(zfsCommandAndArgs):
+def GetArgsForZfsCommand(zfsCommandAndArgsList):
     if (useSudoToRunZfsCommands):
         # Prepend command with "sudo -n" for noninteractive (will not ask for password, will just error if there's a problem)
-        return [sudoCommand, '-n'] + zfsCommandAndArgs;
+        return [sudoCommand, '-n'] + zfsCommandAndArgsList;
     else:
         # Will just attempt to run the command without sudo
-        return zfsCommandAndArgs;
-
-
+        return zfsCommandAndArgsList;
 
 ###################################################################################
 ##
@@ -198,7 +199,6 @@ CheckForExistenceOfCommands(parser);
 ##
 # Get generic info about the ZFS environment
 zfsEntries = []
-#fullCommand=[sudoCommand, '-n', zfsCommand, 'list']
 fullCommand = GetArgsForZfsCommand([zfsCommand, 'list'])
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -232,8 +232,6 @@ if not validPool:
 ###################################################################################
 ##
 # Get info on zpool
-
-#fullCommand=[sudoCommand, '-n', zpoolCommand, 'list', args.pool]
 fullCommand = GetArgsForZfsCommand([zpoolCommand, 'list', args.pool])
 
 try:
@@ -310,7 +308,6 @@ if checkFragmentation and frag=='':
 
 # Get compressratio on zpool
 
-#checkForCompression=[sudoCommand, '-n', zfsCommand, 'get', 'compression', args.pool]
 checkForCompression = GetArgsForZfsCommand([zfsCommand, 'get', 'compression', args.pool])
 
 try:
@@ -349,7 +346,6 @@ if compressName=='':
     logging.warning("%s: Missing required field in zpool output: NAME", nagiosStatus[stateNum])
     exit(stateNum)
 if compressValue=='on':
-    #getCompressRatioCommand=[sudoCommand, '-n', zfsCommand, 'get', 'compressratio', args.pool]
     getCompressRatioCommand = GetArgsForZfsCommand([zfsCommand, 'get', 'compressratio', args.pool])
 
     try:
