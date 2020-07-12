@@ -205,7 +205,7 @@ if not validPool:
 ##
 # Get info on zpool
 
-fullCommand=['/usr/bin/sudo', '-n', zpoolCommand, 'list', args.pool]
+fullCommand=[sudoCommand, '-n', zpoolCommand, 'list', args.pool]
 
 try:
     childProcess = subprocess.Popen(fullCommand, stdin=subprocess.PIPE,
@@ -280,7 +280,7 @@ if checkFragmentation and frag=='':
 
 # Get compressratio on zpool
 
-checkForCompression=['/usr/bin/sudo', '-n', zfsCommand, 'get', 'compression', args.pool]
+checkForCompression=[sudoCommand, '-n', zfsCommand, 'get', 'compression', args.pool]
 
 try:
     childProcess = subprocess.Popen(checkForCompression, stdin=subprocess.PIPE,
@@ -318,7 +318,7 @@ if compressName=='':
     logging.warning("%s: Missing required field in zpool output: NAME", nagiosStatus[stateNum])
     exit(stateNum)
 if compressValue=='on':
-    getCompressRatioCommand=['/usr/bin/sudo', '-n', zfsCommand, 'get', 'compressratio', args.pool]
+    getCompressRatioCommand=[sudoCommand, '-n', zfsCommand, 'get', 'compressratio', args.pool]
 
     try:
         childProcess = subprocess.Popen(getCompressRatioCommand, stdin=subprocess.PIPE,
