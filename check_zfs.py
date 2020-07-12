@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 ########################################################################
 ##
@@ -110,7 +110,7 @@ def CheckForExistenceOfCommands(parser):
 def LogWarningRootProcessWarningAndExit(stateNum, optionalException):
     warningString = f"{nagiosStatus[stateNum]} : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: {zfsCommand}"
     if optionalException is not none:
-        warningString = warningString + $"Exception: {optionalException}"
+        warningString = warningString + f"Exception: {optionalException}"
     logging.warn(warningString)
     exit(stateNum)
 
