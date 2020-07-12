@@ -38,6 +38,21 @@ from types import *
 from os import geteuid
 import os
 
+def pythonVersionCheck():
+    MinimumPython_MajorVersionNumber = 3
+    MinimumPython_MinorVersion = 6
+
+    majorMinor = sys.version_info[:2]
+    major = majorMinor[0]
+    minor = majorMinor[1]
+    if ((major < MinimumPython_MajorVersionNumber) or (major == MinimumPython_MajorVersionNumber and minor < MinimumPython_MinorVersion)):
+        # Note -- We WANT This string syntax, as callers may not have newer ones if running older versions of Python!
+        exit("Error, script needs needs Python %s.%s or later. Detected Python version %s.%s." % (MinimumPython_MajorVersionNumber, MinimumPython_MinorVersion, major, minor))
+
+## Check for reasonably modern version of Python.
+## We do this as soon as we can in the code / run so we can be sure of seeing it.
+pythonVersionCheck();
+
 ##
 # Commands to run
 # CHANGE THESE IF YOU NEED TO
@@ -66,17 +81,6 @@ fragCritThreshold=80
 useSudoToRunZfsCommands=True
 
 logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.WARN);
-
-def pythonVersionCheck():
-    MinimumPython_MajorVersionNumber = 3
-    MinimumPython_MinorVersion = 6
-
-    majorMinor = sys.version_info[:2]
-    major = majorMinor[0]
-    minor = majorMinor[1]
-    if ((major < MinimumPython_MajorVersionNumber) or (major == MinimumPython_MajorVersionNumber and minor < MinimumPython_MinorVersion)):
-        # Note -- We WANT This string syntax, as callers may not have newer ones if running older versions of Python!
-        exit("Error, script needs needs Python %s.%s or later. Detected Python version %s.%s." % (MinimumPython_MajorVersionNumber, MinimumPython_MinorVersion, major, minor))
 
 def CheckArgBounds( valueArr, minVal, maxVal ):
     for value in valueArr:
@@ -120,10 +124,9 @@ def CheckForExistenceOfCommands(parser):
     CheckForExistenceOfCommand(parser, zfsCommand)
 
 def LogWarningRootProcessWarningAndExit(contextString, stateNum, optionalException=None):
-    #warningString = f'{nagiosStatus[stateNum]} : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: Context: {contextString}, then run check script with --nosudo option.'
-    warningString = 'Problem with running as root';
+    warningString = f'{nagiosStatus[stateNum]} : process must be run as root. Possible solution: add the following to your visudo: nagios ALL=NOPASSWD: Context: {contextString}, then run check script with --nosudo option.'
     if optionalException is not None:
-        warningString = warningString + 'Exception: ' + optionalException
+        warningString = f'{warningString} Exception: {optionalException}';
     logging.warning(warningString)
     exit(stateNum)
 
@@ -135,8 +138,7 @@ def GetArgsForZfsCommand(zfsCommandAndArgs):
         # Will just attempt to run the command without sudo
         return zfsCommandAndArgs;
 
-## Check for reasonably modern version of Python
-pythonVersionCheck();
+
 
 ###################################################################################
 ##
